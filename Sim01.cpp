@@ -13,6 +13,7 @@
 #include "Process.hpp"
 #include "MetaData.hpp"
 #include "Config.hpp"
+#include "MemoryFunction.h"
 #include <iomanip>
 #include <stdlib.h>
 
@@ -114,7 +115,13 @@ void outPutByProcess(double flagTime,Config config,Process process)
             if (metadata.action == "allocate") {
                 areaStr = "Process " + processID + ":";
                 actionStartStr = " allocating memory";
-                actionEndStr = " memory allocated at 0x0000000"; //TODO
+                
+                stringstream ss;
+                ss << std::hex << allocateMemory(1000000011);
+                string hexStr = ss.str();
+                string address = "0x" + hexStr;
+                
+                actionEndStr = " memory allocated at " + address ; //TODO
             }
             
             if (metadata.action == "block") {
