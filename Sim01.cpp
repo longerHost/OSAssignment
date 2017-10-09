@@ -18,7 +18,7 @@
 
 using namespace std;
 
-
+//Output of Assignment 1
 void outputLog(Config config, vector<MetaData> metadata)
 {
     //Print to screen
@@ -131,11 +131,6 @@ void outputLog(Config config, vector<MetaData> metadata)
     }
 }
 
-void waitTime(double operationEndTime)
-{
-    while (systemRealTime()< operationEndTime) {};
-}
-
 int timeOfOperation(Config config,MetaData metadata)
 {
     string tempAction = metadata.action;
@@ -167,9 +162,9 @@ int timeOfOperation(Config config,MetaData metadata)
     }
     
     int timeOfOperation = factor * metadata.cycleNum;
-    
     return timeOfOperation;
 }
+
 
 void outPutByMetaData(double flagTime,Config config,MetaData metadata)
 {

@@ -20,6 +20,8 @@
 
 using namespace std;
 
+/*---  Time  --- */
+
 //Get system time by second
 long systemTimeBySecond();
 
@@ -32,6 +34,11 @@ double systemRealTime();
 //Get time interval
 double timeInterval(double flagTime);
 
+//Let the process waiting
+void waitTime(double operationEndTime);
+
+/*---  String ----*/
+
 //Split function for string split by characters mutliple characters
 vector<string> split(const string &s, const string &seperator);
 
@@ -42,5 +49,6 @@ string removeUnnecessaryDelimiter(string s);
 
 //Load content from file by line
 vector<string> loadContentByLine(string filePath);
+
 
 #endif /* Functions_hpp */

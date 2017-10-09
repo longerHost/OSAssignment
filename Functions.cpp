@@ -43,6 +43,11 @@ double timeInterval(double flagTime)
     return systemRealTime() - flagTime;
 };
 
+void waitTime(double operationEndTime)
+{
+    while (systemRealTime()< operationEndTime) {};
+}
+
 //Files operation
 //Split function for string split by characters mutliple characters
 vector<string> split(const string &s, const string &seperator)
