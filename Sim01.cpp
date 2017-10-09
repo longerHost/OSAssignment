@@ -198,36 +198,27 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
 {
     //System start time
     double startTime = systemRealTime();
+    //S(Start)0 system start
     cout << setiosflags(ios::fixed) << systemRealTime() - startTime << "- Simulator Program starting" << endl;
     
+    /*** application running ***/
     queue<Process> processQue = creatProcessByMetadatas(metadatas);
     
     while (!processQue.empty()) {
         queue<MetaData> metaQue = processQue.front().metaDataQueue;
         while (!metaQue.empty()) {
-            cout<< metaQue.front().action << endl;
+            
+            MetaData md = metaQue.front();
+            
+            outPutByMetaData(startTime, config, md);
+            
             metaQue.pop();
         }
         processQue.pop();
     }
     
-    
-    /*
-    queue<MetaData> metaDataQueue;
-    for (int i = 0 ; i< metadatas.size(); i++) {
-        metaDataQueue.push(metadatas[i]);
-    }
-    
-    //out put each
-    while (!metaDataQueue.empty()) {
-        
-        MetaData md = metaDataQueue.front();
-        
-        outPutByMetaData(startTime, config, md);
-        
-        metaDataQueue.pop();
-    }
-     */
+    //S(end)0 system end
+    cout << setiosflags(ios::fixed) << systemRealTime() - startTime << " - Simulator Program ending" << endl;
     
 }
 
