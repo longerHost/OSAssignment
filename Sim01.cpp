@@ -414,14 +414,9 @@ int timeOfOperation(Config config,MetaData metadata)
     return timeOfOperation;
 }
 
-double getOperationTimeInterval(double flagTime)
+void outPutByMetaData(double flagTime,Config config,MetaData metadata)
 {
-    return systemRealTime() - flagTime;
-}
-
-void outPutByMetaData(double flagTime,MetaData metadata)
-{
-    //Program Start
+    //System Start
     if (metadata.instructor == "S") {
         if (metadata.action == "start") {
             cout<< setiosflags(ios::fixed) << timeInterval(flagTime) << " - Simulator Program starting" << endl;
@@ -432,7 +427,7 @@ void outPutByMetaData(double flagTime,MetaData metadata)
         }
     }
     
-    //Process Start
+    //Application Start
     if (metadata.instructor == "A") {
         //Operation start and end
         if (metadata.action == "start") {
@@ -442,6 +437,54 @@ void outPutByMetaData(double flagTime,MetaData metadata)
         }else if (metadata.action == "end"){
             cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << "OS: removing process 1" <<endl;
         }
+    }
+    
+    //Process start
+    string areaStr;
+    string actionStartStr;
+    string actionEndStr;
+    
+    if (metadata.instructor == "P" && metadata.action == "run") {
+        areaStr = "Process 1:";
+        actionStartStr = " start process action";
+        actionEndStr = " end process action";
+    }
+    
+    if (metadata.instructor == "M") {
+        if (metadata.action == "allocate") {
+            areaStr = "Process 1:";
+            actionStartStr = " allocating memory";
+            actionEndStr = " memory allocated at 0x0000000"; //TODO
+        }
+        
+        if (metadata.action == "block") {
+            areaStr = "Process 1:";
+            actionStartStr = " start memory blocking";
+            actionEndStr = " end memory blocking";
+        }
+    }
+    
+    if (metadata.instructor == "O" || metadata.instructor == "I") {
+        string IOString;
+        if (metadata.instructor == "O") {
+            IOString = "output";
+        }else{
+            IOString = "input";
+        }
+        
+        areaStr = "Process 1:";
+        actionStartStr = " start " + metadata.action + " " + IOString;
+        actionEndStr = " End " + metadata.action + " " + IOString;
+    }
+    
+    if (metadata.instructor != "S" && metadata.instructor !="A") {
+        cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionStartStr <<endl;
+        
+        //Let the process running
+        double timeIntervalInSeconds = timeOfOperation(config, metadata)/1000.0;
+        waitTime(systemRealTime() + timeIntervalInSeconds);
+
+        cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionEndStr <<endl;
     }
 }
 
@@ -460,37 +503,9 @@ void outputLogSim2(Config config, vector<MetaData> metadata)
     while (!metaDataQueue.empty()) {
         
         MetaData md = metaDataQueue.front();
-        cout<< md.fullName << endl;
-        string workStr;
-        string operationStartStr;
-        string operationEndStr;
         
-        if (md.instructor == "S") {
-            workStr = " OS: ";
-        }else{
-            workStr = " Process 1: ";
-        }
+        outPutByMetaData(startTime, config, md);
         
-        if (md.action == "start") {
-            operationStartStr = "start processing action";
-        }else{
-            operationStartStr = "TBD ";
-        }
-        
-        if (md.action == "start") {
-            operationEndStr = "end processing action";
-        }else{
-            operationEndStr = "TBD ";
-        }
-        
-        cout<< systemRealTime() - startTime << workStr << operationStartStr << endl;
-        
-        double timeIntervalInSeconds = timeOfOperation(config, md)/1000;
-        
-        waitTime(systemRealTime() + timeIntervalInSeconds);
-        
-        cout<< systemRealTime() - startTime << workStr << operationEndStr << endl;
-
         metaDataQueue.pop();
     }
 }
