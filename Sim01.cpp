@@ -264,12 +264,12 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
 int main(int argc, const char * argv[]) {
     
     //Get config instance by file path
-    Config config = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-1.conf");
-//    Config config = loadConfigData(argv[1]);
+//    Config config = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-1.conf");
+    Config config = loadConfigData(argv[1]);
 
     //Get all metaData
-//    vector<MetaData> metadata = loadMetaData(config.filePath);
-      vector<MetaData> metadata = loadMetaData("/Users/xiaolongma/Desktop/kk/test_1a.mdf");
+    vector<MetaData> metadata = loadMetaData(config.filePath);
+//      vector<MetaData> metadata = loadMetaData("/Users/xiaolongma/Desktop/kk/test_1a.mdf");
 
     //Output log
 //    outputLog(config,metadata);
