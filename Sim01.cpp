@@ -18,119 +18,7 @@
 
 using namespace std;
 
-//Output of Assignment 1
-void outputLog(Config config, vector<MetaData> metadata)
-{
-    //Print to screen
-    cout<< "Configuration File Data" << endl;
-    cout << "Processor = " << config.processor.cycle << " ms/cycle" << endl;
-    cout << "Monitor = " << config.monitor.cycle  << " ms/cycle" << endl;
-    cout << "Hard Drive = " << config.hardDrive.cycle << " ms/cycle" << endl;
-    cout << "Printer = " << config.printer.cycle <<  " ms/cycle" << endl;
-    cout << "Keyboard = " << config.keyboard.cycle << " ms/cycle" << endl;
-    cout << "Memory = " << config.memory.cycle << " ms/cycle" << endl;
-    cout << "Speaker = " << config.mouse.cycle << " ms/cycle" << endl;
-    
-    if (config.logtype == "Log to Both") {
-        cout << "Logged to: monitor and " << config.logFilePath << endl;
-    }else{
-        cout << "Logged to: monitor" << endl;
-    }
-    cout << '\n' << endl;
-    cout << "Meta-Data Metrics" << endl;
-    
-    vector<string> tempVect;
-    
-    for (int i = 2; i < metadata.size()-2; i++) {
-        tempVect = split(metadata[i].fullName, "()");
-        
-        string tempAction = tempVect[1]; //Action instructor
-        string tempCycle = tempVect.back(); //Cycle time
-        
-        int factor = 0;
-        if (tempAction == "allocate" || tempAction == "block") {
-            factor = config.memory.cycle;
-        }else if(tempAction == "keyboard"){
-            factor = config.keyboard.cycle;
-        }else if (tempAction == "hard drive"){
-            factor = config.hardDrive.cycle;
-        }else if(tempAction == "printer"){
-            factor = config.printer.cycle;
-        }else if (tempAction == "monitor"){
-            factor = config.monitor.cycle;
-        }else if (tempAction == "run"){
-            factor = config.processor.cycle;
-        }else if (tempAction == "speaker"){
-            factor = config.speaker.cycle;
-        }else if (tempAction == "mouse"){
-            factor = config.processor.cycle;
-        }else if(tempAction == "end"){
-            factor= 0;
-        }else{
-            cout << "Wrong input in Meta-Data" << endl;
-            assert(factor);
-        }
-        int cycle = stoi(tempCycle);
-        cout << metadata[i].fullName << " - " << cycle * factor << " ms" << endl;
-    }
-    
-    //Print to file
-    if (config.logtype == " Log to Both") {
-        ofstream outFile("/Users/xiaolongma/Desktop/kk/output3.out");
-        if (!outFile) {
-            cout << "Open error while output" <<endl;
-            exit(1);
-        }
-        outFile << "Configuration File Data"<< '\n' <<
-        "Processor = " << config.processor.cycle << " ms/cycle" << '\n' <<
-        "Monitor = " << config.monitor.cycle  << " ms/cycle" << '\n' <<
-        "Hard Drive = " << config.hardDrive.cycle << " ms/cycle" << '\n' <<
-        "Printer = " << config.printer.cycle <<  " ms/cycle" << '\n' <<
-        "Keyboard = " << config.keyboard.cycle << " ms/cycle" << '\n' <<
-        "Memory = " << config.memory.cycle << " ms/cycle" << '\n' <<
-        "Speaker = " << config.mouse.cycle << " ms/cycle" << '\n' <<
-        "Logged to: monitor and " << config.logFilePath << '\n' <<
-        '\n' <<
-        "Meta-Data Metrics" << endl;
-        
-        vector<string> tempVect;
-        
-        for (int i = 2; i < metadata.size() - 2; i++) {
-            tempVect = split(metadata[i].fullName, "()");
-            
-            string tempAction = tempVect[1];
-            string tempCycle = tempVect.back();
-            
-            int factor = 0;
-            if (tempAction == "allocate" || tempAction == "block") {
-                factor = config.memory.cycle;
-            }else if(tempAction == "keyboard"){
-                factor = config.keyboard.cycle;
-            }else if (tempAction == "hard drive"){
-                factor = config.hardDrive.cycle;
-            }else if(tempAction == "printer"){
-                factor = config.printer.cycle;
-            }else if (tempAction == "monitor"){
-                factor = config.monitor.cycle;
-            }else if (tempAction == "run"){
-                factor = config.processor.cycle;
-            }else if (tempAction == "speaker"){
-                factor = config.speaker.cycle;
-            }else if (tempAction == "mouse"){
-                factor = config.processor.cycle;
-            }else{
-                cout << "Wrong input in Meta-Data" << endl;
-                assert(factor);
-            }
-            int cycle = stoi(tempCycle);
-            outFile << metadata[i].fullName << " - " << cycle * factor << " ms" << endl;
-        }
-        
-        outFile.close();
-        cout<< "log to Both" << endl;
-    }
-}
-
+//Total time of each operation(millisecond)
 int timeOfOperation(Config config,MetaData metadata)
 {
     string tempAction = metadata.action;
@@ -165,7 +53,7 @@ int timeOfOperation(Config config,MetaData metadata)
     return timeOfOperation;
 }
 
-
+//Output each line
 void outPutByMetaData(double flagTime,Config config,MetaData metadata)
 {
     //System Start
@@ -240,15 +128,94 @@ void outPutByMetaData(double flagTime,Config config,MetaData metadata)
     }
 }
 
-void outputLogSim2(Config config, vector<MetaData> metadata)
+//Get process by metadatas
+queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
+{
+    //To obtain processes
+    queue<Process> processQue;
+    
+    int processStartNum = 0;
+    int processEndNum = 0;
+    
+    //count total process number
+    int processNum = 0;
+    
+    //This queue is the container of all instructions
+    queue<MetaData> metaLongQueue;
+    
+    //Check if the file format is right
+    for (int i = 0; i<metadatas.size(); i++) {
+        MetaData md = metadatas[i];
+        if (md.instructor == "A") {
+            if (md.action == "start") {
+                processStartNum++;
+            }
+            
+            if (md.action == "end") {
+                processEndNum++;
+            }
+        }
+        metaLongQueue.push(md);
+    }
+    
+    //make sure the file contains equal A(Start) and A(end)
+    if (processStartNum != processEndNum)
+    {
+        cout<< "Wrong file format:instuctions A(start)0 not equals to A(end)" <<endl;
+        exit(1);
+    }
+    
+    //Separate long Queue by process and put the process instance to processQue
+    queue<MetaData> metaProcessQueue;
+    while (!metaLongQueue.empty()) {
+        
+        MetaData md = metaLongQueue.front();
+        
+        if (md.instructor == "A" && md.action == "start") {
+            //Empty metaProcessQueue
+            while (!metaProcessQueue.empty()) {
+                metaProcessQueue.pop();
+            }
+        }
+        
+        metaProcessQueue.push(md);
+        
+        if (md.instructor == "A" && md.action == "end") {
+            Process nProcess;
+            nProcess.processID = ++processNum;
+            nProcess.processState = START;
+            nProcess.metaDataQueue = metaProcessQueue;
+            processQue.push(nProcess);
+        }
+        
+        metaLongQueue.pop();
+    }
+    
+    return processQue;
+}
+
+void outputLogSim2(Config config, vector<MetaData> metadatas)
 {
     //System start time
     double startTime = systemRealTime();
     cout << setiosflags(ios::fixed) << systemRealTime() - startTime << "- Simulator Program starting" << endl;
     
+    queue<Process> processQue = creatProcessByMetadatas(metadatas);
+    
+    while (!processQue.empty()) {
+        queue<MetaData> metaQue = processQue.front().metaDataQueue;
+        while (!metaQue.empty()) {
+            cout<< metaQue.front().action << endl;
+            metaQue.pop();
+        }
+        processQue.pop();
+    }
+    
+    
+    /*
     queue<MetaData> metaDataQueue;
-    for (int i = 0 ; i< metadata.size(); i++) {
-        metaDataQueue.push(metadata[i]);
+    for (int i = 0 ; i< metadatas.size(); i++) {
+        metaDataQueue.push(metadatas[i]);
     }
     
     //out put each
@@ -260,6 +227,8 @@ void outputLogSim2(Config config, vector<MetaData> metadata)
         
         metaDataQueue.pop();
     }
+     */
+    
 }
 
 //main function

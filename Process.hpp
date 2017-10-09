@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <queue>
+#include "MetaData.hpp"
 
 enum ProcessState
 {
@@ -29,11 +30,9 @@ public:
 class Process
 {
 public:
-    ProcessState processState;
-    double startTime,endTime;
     int processID;
+    queue<MetaData> metaDataQueue;
+    ProcessState processState;
 };
-
-
 
 #endif /* Process_hpp */
