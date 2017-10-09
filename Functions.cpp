@@ -91,6 +91,7 @@ vector<string> split(const string &s, const string &seperator)
 }
 
 //Split string by one charcter
+//s string c delimiter
 vector<string> SplitString(const string &s, const string &c)
 {
     string::size_type pos1, pos2;
@@ -134,5 +135,27 @@ vector<string> loadContentByLine(string filePath)
     }
     inFile.close();
     return contents;
+}
+
+//Check if the file name is legal
+bool isFileNameLegal(string fileName)
+{
+    bool isLegal = true;
+
+    vector<string> tempVec = SplitString(fileName, ".");
+    
+    if (tempVec.size()!= 2) {
+        isLegal = false;
+        cout<< "illegal file name" << endl;
+        exit(1);
+    }else{   //
+        string suffix = tempVec.back();
+        if (suffix != "conf" || suffix != "mdf") {
+            isLegal = false;
+            cout<< "illegal suffix" << endl;
+            exit(1);
+        }
+    }
+    return isLegal;
 }
 

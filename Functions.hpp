@@ -50,5 +50,7 @@ string removeUnnecessaryDelimiter(string s);
 //Load content from file by line
 vector<string> loadContentByLine(string filePath);
 
+//Check if file name is legal
+bool isFileNameLegal(string fileName);
 
 #endif /* Functions_hpp */
