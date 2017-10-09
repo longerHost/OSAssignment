@@ -10,19 +10,7 @@
 #define MetaData_hpp
 
 #include <stdio.h>
-#include <string>
-#include <vector>
-#include <iostream>
-
-using namespace std;
-
-//Split function for string split by characters mutliple characters
-vector<string> split(const string &s, const string &seperator);
-
-//Split string by one charcter
-vector<string> SplitString(const string &s, const string &c);
-
-string removeUnnecessaryDelimiter(string s);
+#include "Functions.hpp"
 
 class MetaData
 {
@@ -43,5 +31,7 @@ public:
     };
 };
 
+//Load meta file data and return a vector including all metaData instances
+vector<MetaData> loadMetaData(string filePath);
 
 #endif /* MetaData_hpp */

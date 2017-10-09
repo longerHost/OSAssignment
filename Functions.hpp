@@ -11,6 +11,14 @@
 
 #include <stdio.h>
 #include <sys/time.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <cassert>
+#include <map>
+
+using namespace std;
 
 //Get system time by second
 long systemTimeBySecond();
@@ -23,5 +31,16 @@ double systemRealTime();
 
 //Get time interval
 double timeInterval(double flagTime);
+
+//Split function for string split by characters mutliple characters
+vector<string> split(const string &s, const string &seperator);
+
+//Split string by one charcter
+vector<string> SplitString(const string &s, const string &c);
+
+string removeUnnecessaryDelimiter(string s);
+
+//Load content from file by line
+vector<string> loadContentByLine(string filePath);
 
 #endif /* Functions_hpp */
