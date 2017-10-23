@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <sstream>
 #include <map>
 
 using namespace std;
@@ -52,5 +53,14 @@ vector<string> loadContentByLine(string filePath);
 
 //Check if file name is legal
 bool isFileNameLegal(string fileName);
+
+//Allocate hard drive
+int allocateHardDrive();
+
+//Allocate printer
+int allocatePrinter();
+
+//Allocate memory
+string allocateMemory();
 
 #endif /* Functions_hpp */

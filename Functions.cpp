@@ -24,8 +24,8 @@ long systemTimeByUSecond()
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    __darwin_time_t second = tv.tv_usec;
-    return second;
+    __darwin_time_t uSecond = tv.tv_usec;
+    return uSecond;
 };
 
 //Get System time including second and microsecond
@@ -137,7 +137,11 @@ vector<string> loadContentByLine(string filePath)
     return contents;
 }
 
+//TODO
+
 //Check if the file name is legal
+//This function responsible for checking whether the file name is legal
+//If not will print the warning information to the screen
 bool isFileNameLegal(string fileName)
 {
     bool isLegal = true;
@@ -158,4 +162,51 @@ bool isFileNameLegal(string fileName)
     }
     return isLegal;
 }
+
+long int totalMemory = 0, usedMemory = 0;
+long int blockSize = 0;
+string allocateMemory()
+{
+    stringstream ss;
+    string s;
+    
+    if (blockSize > totalMemory - usedMemory) {
+        usedMemory = blockSize;
+    }
+    
+    ss << hex <<usedMemory;
+    s=ss.str();
+    for (int i = (int)s.length(); i<8; i++) {
+        s= "0" + s;
+    }
+    
+    usedMemory += blockSize;
+    return s;
+}
+
+
+//Allocate the number of hard drive
+int usedHD = 0;
+int totalHD = 0;
+int allocateHardDrive()
+{
+    usedHD++;
+    if (usedHD > totalHD) {
+        usedHD = 1;
+    }
+    return usedHD;
+}
+
+//Allocate the number of printer
+int usedPrinter = 0;
+int totalPrinter = 0;
+int allocatePrinter()
+{
+    usedPrinter++;
+    if (usedPrinter > totalPrinter) {
+        usedPrinter = 1;
+    }
+    return usedPrinter;
+}
+
 
