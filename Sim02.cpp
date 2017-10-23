@@ -67,8 +67,11 @@ void *ThreadProcessing(void *t) {
 }
 
 //Output each line
-void outPutByProcess(double flagTime,Config config,Process process)
+void executeProcess(double flagTime,Config config,Process process)
 {
+    
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
     while (!process.metaDataQueue.empty()) {
         
         MetaData metadata = process.metaDataQueue.front();
@@ -133,6 +136,10 @@ void outPutByProcess(double flagTime,Config config,Process process)
         
         //Instructions of I/O
         if (metadata.instructor == "O" || metadata.instructor == "I") {
+            
+            //Lock I/O operation with mutex
+            pthread_mutex_lock(&mutex);
+            
             string IOString;
             if (metadata.instructor == "O") {
                 IOString = "output";
@@ -151,6 +158,9 @@ void outPutByProcess(double flagTime,Config config,Process process)
             pthread_create(&thread, &attr, ThreadProcessing, (void *)(intptr_t)(timeInMicroSec));
             pthread_join(thread, NULL);
             process.processState = RUNNING;
+            
+            //Unlock the I/O operation with mutex
+            pthread_mutex_unlock(&mutex);
         }
         
         
@@ -170,8 +180,9 @@ void outPutByProcess(double flagTime,Config config,Process process)
         }
         process.metaDataQueue.pop();
     }
-}
+    
 
+}
 
 //Get process by metadatas
 queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
@@ -210,7 +221,7 @@ queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
         exit(1);
     }
     
-    //Separate long Queue by process and put the process instance to processQue
+    //Separate long Queue by process and put the processes instance to processQue
     queue<MetaData> metaProcessQueue;
     while (!metaLongQueue.empty()) {
         
@@ -248,11 +259,13 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
     cout << setiosflags(ios::fixed) << systemRealTime() - startTime << " - Simulator Program starting" << endl;
     
     /*** application running ***/
+    //Processes Queue
     queue<Process> processQue = creatProcessByMetadatas(metadatas);
     
+    //Mutiple processes
     while (!processQue.empty()) {
         Process p = processQue.front();
-        outPutByProcess(startTime, config, p);
+        executeProcess(startTime, config, p/*Process to be executed*/);
         processQue.pop();
     }
     
@@ -264,7 +277,7 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
 int main(int argc, const char * argv[]) {
     
     //Get config instance by file path
-    Config config = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-1.conf");
+    Config config = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-2.conf");
 //    Config config = loadConfigData(argv[1]);
 
     //Get all metaData
