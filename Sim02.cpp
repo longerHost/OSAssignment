@@ -154,15 +154,19 @@ void executeProcess(double flagTime,Config config,Process process)
             process.processState = WAITING;
             double timeIntervalInSeconds = timeOfOperation(config, metadata)/1000.0;
             long timeInMicroSec = (systemRealTime() + timeIntervalInSeconds) * 1000000;
+
+            cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionStartStr <<endl;
+
             pthread_attr_init(&attr);
             pthread_create(&thread, &attr, ThreadProcessing, (void *)(intptr_t)(timeInMicroSec));
             pthread_join(thread, NULL);
             process.processState = RUNNING;
             
+            cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionEndStr <<endl;
+
             //Unlock the I/O operation with mutex
             pthread_mutex_unlock(&mutex);
         }
-        
         
         if (metadata.instructor == "P" || metadata.instructor =="M") {
             
@@ -180,8 +184,6 @@ void executeProcess(double flagTime,Config config,Process process)
         }
         process.metaDataQueue.pop();
     }
-    
-
 }
 
 //Get process by metadatas
@@ -246,7 +248,6 @@ queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
         
         metaLongQueue.pop();
     }
-    
     return processQue;
 }
 
