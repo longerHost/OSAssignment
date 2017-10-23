@@ -74,6 +74,26 @@ Config loadConfigData(string filePath)
     config.speaker.name = configIter->first;
     config.speaker.cycle =stoi(configIter->second);
     
+    configIter = configMap.find("System memory (kbytes)");
+    if (configIter != configMap.end()) {
+        config.systemMemory = stoi(configIter->second);
+    }
+    
+    configIter = configMap.find("Memory block size (kbytes)");
+    if (configIter!= configMap.end()) {
+        config.memoryBolckSize = stoi(configIter->second);
+    }
+    
+    configIter = configMap.find("Printer quantity");
+    if (configIter != configMap.end()) {
+        config.printerCounts = stoi(configIter->second);
+    }
+    
+    configIter = configMap.find("Hard drive quantity");
+    if (configIter != configMap.end()) {
+        config.hardDriveCounts = stoi(configIter -> second);
+    }
+    
     configIter = configMap.find("Log");
     config.logtype = configIter->second;
     

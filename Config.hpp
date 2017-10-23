@@ -32,6 +32,10 @@ public:
     Device memory;
     Device mouse;
     Device speaker;
+    int systemMemory;
+    int memoryBolckSize;
+    int printerCounts;
+    int hardDriveCounts;
     string logtype;
     string logFilePath;
 };
