@@ -55,12 +55,12 @@ vector<string> loadContentByLine(string filePath);
 bool isFileNameLegal(string fileName);
 
 //Allocate hard drive
-int allocateHardDrive();
+int allocateHardDrive(int totalHD);
 
 //Allocate printer
-int allocatePrinter();
+int allocatePrinter(int totalPrinter);
 
 //Allocate memory
-string allocateMemory();
+string allocateMemory(long int blockSize,long int totalMemory);
 
 #endif /* Functions_hpp */

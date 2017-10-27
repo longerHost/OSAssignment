@@ -163,9 +163,8 @@ bool isFileNameLegal(string fileName)
     return isLegal;
 }
 
-long int totalMemory = 0, usedMemory = 0;
-long int blockSize = 0;
-string allocateMemory()
+long int usedMemory = 0;
+string allocateMemory(long int blockSize,long int totalMemory)
 {
     stringstream ss;
     string s;
@@ -187,8 +186,7 @@ string allocateMemory()
 
 //Allocate the number of hard drive
 int usedHD = 0;
-int totalHD = 0;
-int allocateHardDrive()
+int allocateHardDrive(int totalHD)
 {
     usedHD++;
     if (usedHD > totalHD) {
@@ -199,8 +197,7 @@ int allocateHardDrive()
 
 //Allocate the number of printer
 int usedPrinter = 0;
-int totalPrinter = 0;
-int allocatePrinter()
+int allocatePrinter(int totalPrinter)
 {
     usedPrinter++;
     if (usedPrinter > totalPrinter) {

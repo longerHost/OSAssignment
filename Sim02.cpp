@@ -13,7 +13,6 @@
 #include "Process.hpp"
 #include "MetaData.hpp"
 #include "Config.hpp"
-#include "MemoryFunction.hpp"
 #include <iomanip>
 #include <stdlib.h>
 
@@ -114,16 +113,16 @@ void executeProcess(double flagTime,Config config,Process process)
         }
         
         //Instructions of Memory
+        
+        //New memory allocate function
         if (metadata.instructor == "M") {
             if (metadata.action == "allocate") {
                 areaStr = "Process " + processID + ":";
                 actionStartStr = " allocating memory";
-                
                 stringstream ss;
-                ss << std::hex << allocateMemory(1000000011);
+                ss << std::hex << allocateMemory(config.memoryBolckSize,config.systemMemory);
                 string hexStr = ss.str();
                 string address = "0x" + hexStr;
-                
                 actionEndStr = " memory allocated at " + address ; //TODO
             }
             
@@ -147,6 +146,19 @@ void executeProcess(double flagTime,Config config,Process process)
                 IOString = "input";
             }
             
+            string suffixStr = "";
+            
+            //Project 3
+            if (metadata.action == "printer") {
+                int printerNum = allocatePrinter(config.printerCounts);
+                suffixStr = " on printer " + to_string(printerNum);
+            }
+            
+            if (metadata.action == "hard drive") {
+                int hardDriveNum = allocateHardDrive(config.hardDriveCounts);
+                suffixStr = " on HDD " + to_string(hardDriveNum);
+            }
+            
             areaStr = "Process " + processID + ":";
             actionStartStr = " start " + metadata.action + " " + IOString;
             actionEndStr = " End " + metadata.action + " " + IOString;
@@ -154,9 +166,9 @@ void executeProcess(double flagTime,Config config,Process process)
             process.processState = WAITING;
             double timeIntervalInSeconds = timeOfOperation(config, metadata)/1000.0;
             long timeInMicroSec = (systemRealTime() + timeIntervalInSeconds) * 1000000;
-
-            cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionStartStr <<endl;
-
+            
+            cout << setiosflags(ios::fixed) << timeInterval(flagTime) << " - " << areaStr + actionStartStr + suffixStr <<endl;
+            
             pthread_attr_init(&attr);
             pthread_create(&thread, &attr, ThreadProcessing, (void *)(intptr_t)(timeInMicroSec));
             pthread_join(thread, NULL);
@@ -283,7 +295,7 @@ int main(int argc, const char * argv[]) {
 
     //Get all metaData
 //    vector<MetaData> metadata = loadMetaData(config.filePath);
-      vector<MetaData> metadata = loadMetaData("/Users/xiaolongma/Desktop/OSAssignment/test_3a.mdf");
+      vector<MetaData> metadata = loadMetaData("/Users/xiaolongma/Desktop/OSAssignment/test_1a.mdf");
 
     //Output log
 //    outputLog(config,metadata);
