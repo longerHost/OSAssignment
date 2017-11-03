@@ -14,7 +14,7 @@ long systemTimeBySecond()
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    __darwin_time_t second = tv.tv_sec;
+    long second = tv.tv_sec;
     return second;
 };
 
@@ -24,7 +24,7 @@ long systemTimeByUSecond()
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    __darwin_time_t uSecond = tv.tv_usec;
+    long uSecond = tv.tv_usec;
     return uSecond;
 };
 
