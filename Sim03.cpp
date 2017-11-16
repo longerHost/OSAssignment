@@ -336,7 +336,7 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
             processV.push_back(p);
             processQue.pop();
         }
-        processV.sort(sortBySJF);
+        processV.sort(sortByPS);
     }
     
     //3. SJF base on remaining time
@@ -351,13 +351,17 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
     
     //Put the sorted processes back to queue
     
-    
+    while (!processV.empty()) {
+        Process p = processV.front();
+        executeQue.push(p);
+        processV.pop_front();
+    }
     
     //Mutiple processes
-    while (!processQue.empty()) {
-        Process p = processQue.front();
+    while (!executeQue.empty()) {
+        Process p = executeQue.front();
         executeProcess(startTime, config, p/*Process to be executed*/);
-        processQue.pop();
+        executeQue.pop();
     }
     
     //S(end)0 system end
