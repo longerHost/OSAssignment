@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "Functions.hpp"
 
+//MetaData sample - S(Start)0;
 class MetaData
 {
 public:

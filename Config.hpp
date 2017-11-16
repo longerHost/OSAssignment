@@ -24,6 +24,8 @@ class Config
 public:
     string versionNum;
     string filePath;
+    int processQuantumNumber;
+    string cpuSchedulingCode;
     Device processor;
     Device monitor;
     Device hardDrive;

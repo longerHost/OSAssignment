@@ -15,6 +15,7 @@
 #include "Config.hpp"
 #include <iomanip>
 #include <stdlib.h>
+#include <list>
 
 using namespace std;
 
@@ -53,6 +54,36 @@ int timeOfOperation(Config config,MetaData metadata)
     return timeOfOperation;
 }
 
+//Got the total execution time of a process
+int timeOfProcess(Config config,queue<MetaData> metaDataQue)
+{
+    int timeOfProcess = 0;
+    
+    while (!metaDataQue.empty()) {
+        MetaData metaData = metaDataQue.front();
+        timeOfProcess += timeOfOperation(config, metaData);
+        metaDataQue.pop();
+    }
+    
+    return timeOfProcess;
+}
+
+//Got the total number of IO instructions
+int totalIOInstruction(queue<MetaData> metaDataQue)
+{
+    int totalIOInstructions = 0;
+    
+    while (!metaDataQue.empty()) {
+        MetaData metaData = metaDataQue.front();
+        if (metaData.instructor == "O" || metaData.instructor == "I") {
+            totalIOInstructions++;
+        }
+        metaDataQue.pop();
+    }
+    
+    return totalIOInstructions;
+}
+
 //Pthreads
 pthread_t thread;
 pthread_attr_t attr;
@@ -66,9 +97,9 @@ void *ThreadProcessing(void *t) {
 }
 
 //Output each line
+//Todo: use semaphore
 void executeProcess(double flagTime,Config config,Process process)
 {
-    
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
     while (!process.metaDataQueue.empty()) {
@@ -199,7 +230,7 @@ void executeProcess(double flagTime,Config config,Process process)
 }
 
 //Get process by metadatas
-queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
+queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
 {
     //To obtain processes
     queue<Process> processQue;
@@ -255,13 +286,26 @@ queue<Process> creatProcessByMetadatas(vector<MetaData> metadatas)
             nProcess.processID = ++processNum;
             nProcess.processState = START;
             nProcess.metaDataQueue = metaProcessQueue;
+            nProcess.ExecutionTime = timeOfProcess(config,metaProcessQueue);
+            nProcess.IONumber = totalIOInstruction(metaProcessQueue);
             processQue.push(nProcess);
         }
-        
         metaLongQueue.pop();
     }
     return processQue;
 }
+
+
+bool sortBySJF(const Process &p1,const Process &p2)
+{
+    return p1.ExecutionTime < p2.ExecutionTime;
+}
+
+bool sortByPS(const Process &p1,const Process &p2)
+{
+    return p1.IONumber > p2.IONumber;
+}
+
 
 //Output for Assignment 2
 void outputLogSim2(Config config, vector<MetaData> metadatas)
@@ -273,7 +317,41 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
     
     /*** application running ***/
     //Processes Queue
-    queue<Process> processQue = creatProcessByMetadatas(metadatas);
+    queue<Process> processQue = creatProcessByMetadatas(config, metadatas);
+    
+    //TODO: Project 4 how to manipulate the order of different queues
+    queue<Process> executeQue;
+    //3. FIFO currently the method
+    if (config.cpuSchedulingCode == "FIFO") {
+        executeQue = processQue;
+    }
+    
+    //Put into list and use sort method to sort the processes
+    list<Process> processV;
+    
+    //2. PS priority base on numbers of the instructions
+    if (config.cpuSchedulingCode == "PS") {
+        while (!processQue.empty()) {
+            Process p = processQue.front();
+            processV.push_back(p);
+            processQue.pop();
+        }
+        processV.sort(sortBySJF);
+    }
+    
+    //3. SJF base on remaining time
+    if (config.cpuSchedulingCode == "SJF") {
+        while (!processQue.empty()) {
+            Process p = processQue.front();
+            processV.push_back(p);
+            processQue.pop();
+        }
+        processV.sort(sortBySJF);
+    }
+    
+    //Put the sorted processes back to queue
+    
+    
     
     //Mutiple processes
     while (!processQue.empty()) {

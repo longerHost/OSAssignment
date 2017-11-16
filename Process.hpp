@@ -33,6 +33,8 @@ public:
     int processID;
     queue<MetaData> metaDataQueue;
     ProcessState processState;
+    int ExecutionTime;
+    int IONumber;
 };
 
 #endif /* Process_hpp */

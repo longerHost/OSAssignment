@@ -42,6 +42,12 @@ Config loadConfigData(string filePath)
     configIter = configMap.find("File Path");
     config.filePath = configIter->second;
     
+    configIter = configMap.find("Processor Quantum Number");
+    config.processQuantumNumber = stoi(configIter->second);
+    
+    configIter = configMap.find("CPU Scheduling Code");
+    config.cpuSchedulingCode = configIter -> second;
+    
     configIter = configMap.find("Processor cycle time (msec)");
     config.processor.name = configIter->first;
     config.processor.cycle =stoi(configIter->second);
