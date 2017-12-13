@@ -19,6 +19,9 @@
 
 using namespace std;
 
+// Container of the processes for the whole application
+queue<Process> appProcess;
+
 //Total time of each operation(millisecond)
 int timeOfOperation(Config config,MetaData metadata)
 {
@@ -80,7 +83,6 @@ int totalIOInstruction(queue<MetaData> metaDataQue)
         }
         metaDataQue.pop();
     }
-    
     return totalIOInstructions;
 }
 
@@ -229,7 +231,7 @@ void executeProcess(double flagTime,Config config,Process process)
     }
 }
 
-//Get process by metadatas
+//Get Processes Sequence by metadatas
 queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
 {
     //To obtain processes
@@ -268,6 +270,7 @@ queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
     
     //Separate long Queue by process and put the processes instance to processQue
     queue<MetaData> metaProcessQueue;
+    
     while (!metaLongQueue.empty()) {
         
         MetaData md = metaLongQueue.front();
@@ -295,17 +298,40 @@ queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
     return processQue;
 }
 
+//=======
+void *loadNewInstructions(void * arg)
+{
+    //Repeat the loading process for 10 times
+    for (int i = 0; i < 10; i++) {
+        //Every 100ms invoke a creatProcessByMetadatas
+        //100ms equals to 100,000 useconds
+        waituSeconds(100000);
+//        creatProcessByMetadatas(<#Config config#>, <#vector<MetaData> metadatas#>);
+    }
+    pthread_exit(NULL);
+}
 
+//Every 100ms load the instructions in metadata file to simulate the running applications
+void createApplicationSimilator(Config config,vector<MetaData> metaDatas)
+{
+    pthread_t pid;
+    pthread_create(&pid, NULL, loadNewInstructions, NULL);
+    pthread_join(pid,NULL);
+}
+
+//=======
+
+//Algorithm of SJF
 bool sortBySJF(const Process &p1,const Process &p2)
 {
     return p1.ExecutionTime < p2.ExecutionTime;
 }
 
+//Algorithm of PS
 bool sortByPS(const Process &p1,const Process &p2)
 {
     return p1.IONumber > p2.IONumber;
 }
-
 
 //Output for Assignment 2
 void outputLogSim2(Config config, vector<MetaData> metadatas)
@@ -349,8 +375,19 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
         processV.sort(sortBySJF);
     }
     
-    //Put the sorted processes back to queue
+    //4. RR Quantum number 50
+    if (config.cpuSchedulingCode == "RR") {
+        //RR algorithm
+        
+    }
     
+    //5. SRTF Shortest Time Remaining
+    if (config.cpuSchedulingCode == "SRTF") {
+        //Shortest remaining time first
+        
+    }
+    
+    //Put the sorted processes back to queue
     while (!processV.empty()) {
         Process p = processV.front();
         executeQue.push(p);

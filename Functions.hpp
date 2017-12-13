@@ -38,6 +38,12 @@ double timeInterval(double flagTime);
 //Let the process waiting
 void waitTime(double operationEndTime);
 
+//Let the process wait for t seconds
+void waitSeconds(int t);
+
+//Let the process wait for t uSeconds
+void waituSeconds(int t);
+
 /*---  String ----*/
 
 //Split function for string split by characters mutliple characters

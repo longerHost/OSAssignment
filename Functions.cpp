@@ -48,6 +48,19 @@ void waitTime(double operationEndTime)
     while (systemRealTime()< operationEndTime) {};
 }
 
+//Let the thread wait for t seconds
+void waitSeconds(int t)
+{
+    while (systemTimeBySecond() < systemTimeBySecond() + t) {}
+}
+
+//Let the thread wait for t uSecond
+void waituSeconds(int t)
+{
+    while (systemTimeByUSecond() < systemTimeByUSecond() + t) {}
+}
+
+
 //Files operation
 //Split function for string split by characters mutliple characters
 vector<string> split(const string &s, const string &seperator)
