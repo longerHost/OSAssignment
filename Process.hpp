@@ -34,6 +34,8 @@ public:
     queue<MetaData> metaDataQueue;
     ProcessState processState;
     int ExecutionTime;
+    int remainingTime;
+    int executedTime;
     int IONumber;
 };
 

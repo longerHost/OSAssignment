@@ -16,11 +16,41 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <list>
+#include <unistd.h>
 
 using namespace std;
 
 // Container of the processes for the whole application
-queue<Process> appProcess;
+queue<Process> appProcessesQue;
+
+//Config info from config files
+Config appConfig;
+
+//MetaData from metaData files
+vector<MetaData> tasksMetadata;
+
+//This is for generate the Process id number, an increment number
+int appProcessIDNumber;
+
+//=======
+
+//Algorithm of SJF
+bool sortBySJF(const Process &p1,const Process &p2)
+{
+    return p1.ExecutionTime < p2.ExecutionTime;
+}
+
+//Algorithm of PS
+bool sortByPS(const Process &p1,const Process &p2)
+{
+    return p1.IONumber > p2.IONumber;
+}
+
+//Algorithm of SRTF
+bool sortBySRTF(const Process &p1,const Process &p2)
+{
+    return p1.remainingTime < p2.remainingTime;
+}
 
 //Total time of each operation(millisecond)
 int timeOfOperation(Config config,MetaData metadata)
@@ -228,20 +258,24 @@ void executeProcess(double flagTime,Config config,Process process)
             process.processState = RUNNING;
         }
         process.metaDataQueue.pop();
+        
+        process.executedTime = systemRealTime() - flagTime;
+        if (process.executedTime > process.ExecutionTime) {
+            process.remainingTime = process.ExecutionTime - process.executedTime;
+        }else{
+            process.remainingTime = 0;
+        }
     }
 }
 
 //Get Processes Sequence by metadatas
-queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
+queue<Process> creatProcessesQueueByMetadatas(Config config,vector<MetaData> metadatas)
 {
     //To obtain processes
     queue<Process> processQue;
     
     int processStartNum = 0;
     int processEndNum = 0;
-    
-    //count total process number
-    int processNum = 0;
     
     //This queue is the container of all instructions
     queue<MetaData> metaLongQueue;
@@ -286,10 +320,11 @@ queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
         
         if (md.instructor == "A" && md.action == "end") {
             Process nProcess;
-            nProcess.processID = ++processNum;
+            nProcess.processID = ++appProcessIDNumber;
             nProcess.processState = START;
             nProcess.metaDataQueue = metaProcessQueue;
             nProcess.ExecutionTime = timeOfProcess(config,metaProcessQueue);
+            nProcess.remainingTime = nProcess.ExecutionTime;
             nProcess.IONumber = totalIOInstruction(metaProcessQueue);
             processQue.push(nProcess);
         }
@@ -298,16 +333,29 @@ queue<Process> creatProcessByMetadatas(Config config,vector<MetaData> metadatas)
     return processQue;
 }
 
-//=======
-void *loadNewInstructions(void * arg)
+//======= project 5 ======
+
+void *loadNewProcesses(void * arg)
 {
     //Repeat the loading process for 10 times
     for (int i = 0; i < 10; i++) {
         //Every 100ms invoke a creatProcessByMetadatas
         //100ms equals to 100,000 useconds
-        waituSeconds(100000);
-//        creatProcessByMetadatas(<#Config config#>, <#vector<MetaData> metadatas#>);
+        usleep(100000);
+        
+        //every 100ms create a new process queue
+        queue<Process> followQue = creatProcessesQueueByMetadatas(appConfig, tasksMetadata);
+        
+        cout << "**** 这是分割线 *****" << endl;
+        
+        //Add the new created processes to appProcessQueue
+        while (!followQue.empty()) {
+            Process p = followQue.front();
+            appProcessesQue.push(p);
+            followQue.pop();
+        }
     }
+    
     pthread_exit(NULL);
 }
 
@@ -315,26 +363,12 @@ void *loadNewInstructions(void * arg)
 void createApplicationSimilator(Config config,vector<MetaData> metaDatas)
 {
     pthread_t pid;
-    pthread_create(&pid, NULL, loadNewInstructions, NULL);
-    pthread_join(pid,NULL);
+    pthread_create(&pid, NULL, loadNewProcesses, NULL);
+//    pthread_join(pid, NULL);
 }
 
-//=======
-
-//Algorithm of SJF
-bool sortBySJF(const Process &p1,const Process &p2)
-{
-    return p1.ExecutionTime < p2.ExecutionTime;
-}
-
-//Algorithm of PS
-bool sortByPS(const Process &p1,const Process &p2)
-{
-    return p1.IONumber > p2.IONumber;
-}
-
-//Output for Assignment 2
-void outputLogSim2(Config config, vector<MetaData> metadatas)
+//Output for Assignment 5
+void outputLogSim3(Config config, vector<MetaData> metadatas)
 {
     //System start time
     double startTime = systemRealTime();
@@ -343,9 +377,8 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
     
     /*** application running ***/
     //Processes Queue
-    queue<Process> processQue = creatProcessByMetadatas(config, metadatas);
+    queue<Process> processQue = creatProcessesQueueByMetadatas(config, metadatas);
     
-    //TODO: Project 4 how to manipulate the order of different queues
     queue<Process> executeQue;
     //3. FIFO currently the method
     if (config.cpuSchedulingCode == "FIFO") {
@@ -375,18 +408,6 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
         processV.sort(sortBySJF);
     }
     
-    //4. RR Quantum number 50
-    if (config.cpuSchedulingCode == "RR") {
-        //RR algorithm
-        
-    }
-    
-    //5. SRTF Shortest Time Remaining
-    if (config.cpuSchedulingCode == "SRTF") {
-        //Shortest remaining time first
-        
-    }
-    
     //Put the sorted processes back to queue
     while (!processV.empty()) {
         Process p = processV.front();
@@ -405,20 +426,71 @@ void outputLogSim2(Config config, vector<MetaData> metadatas)
     cout << setiosflags(ios::fixed) << systemRealTime() - startTime << " - Simulator Program ending" << endl;
 }
 
+//Output for assignment 5
+void outputLogSim5(Config config, vector<MetaData> metadatas)
+{
+    //Initial queue
+    appProcessesQue = creatProcessesQueueByMetadatas(config, metadatas);
+
+    //follow up tasks every 100ms
+    //Load new tasks in every 100ms in this function
+    createApplicationSimilator(appConfig, tasksMetadata);
+
+    //Get the App Starting time
+    double appStartTime = systemRealTime();
+
+    /*
+    //Put into list and use sort method to sort the processes
+    list<Process> processV;
+    
+    //Every time sort the queue by our assigned algorithm
+    //4. RR Quantum number 50
+    if (appConfig.cpuSchedulingCode == "RR") {
+        //RR algorithm
+    }
+    
+    //5. SRTF Shortest Time Remaining
+    if (appConfig.cpuSchedulingCode == "SRTF") {
+        while (!appProcessesQue.empty()) {
+            Process p = appProcessesQue.front();
+            processV.push_back(p);
+            appProcessesQue.pop();
+        }
+        processV.sort(sortBySRTF);
+    }
+    
+    //Put the sorted processes back to queue
+    while (!processV.empty()) {
+        Process p = processV.front();
+        appProcessesQue.push(p);
+        processV.pop_front();
+    }
+    */
+    
+    //Mutiple processes
+    //execute the process should be in main thread not this thread
+    while (!appProcessesQue.empty()) {
+        Process p = appProcessesQue.front();
+        executeProcess(appStartTime, appConfig, p);
+        appProcessesQue.pop();
+    }
+}
+
 //main function
 int main(int argc, const char * argv[]) {
     
     //Get config instance by file path
-    Config config = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-2.conf");
+    appConfig = loadConfigData("/Users/xiaolongma/Desktop/OSAssignment/config_1-2.conf");
 //    Config config = loadConfigData(argv[1]);
 
     //Get all metaData
 //    vector<MetaData> metadata = loadMetaData(config.filePath);
-      vector<MetaData> metadata = loadMetaData("/Users/xiaolongma/Desktop/OSAssignment/test_1a.mdf");
+    tasksMetadata = loadMetaData("/Users/xiaolongma/Desktop/OSAssignment/test_1a.mdf");
 
     //Output log
 //    outputLog(config,metadata);
-    outputLogSim2(config, metadata);
+    //outputLogSim3(appConfig, tasksMetadata);
+    outputLogSim5(appConfig, tasksMetadata);
     
     return 0;
 }
