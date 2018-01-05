@@ -37,6 +37,7 @@ public:
     int remainingTime;
     int executedTime;
     int IONumber;
+    int totalInstructionNum;
 };
 
 #endif /* Process_hpp */

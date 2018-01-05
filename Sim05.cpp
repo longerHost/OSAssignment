@@ -346,8 +346,6 @@ void *loadNewProcesses(void * arg)
         //every 100ms create a new process queue
         queue<Process> followQue = creatProcessesQueueByMetadatas(appConfig, tasksMetadata);
         
-        cout << "**** 这是分割线 *****" << endl;
-        
         //Add the new created processes to appProcessQueue
         while (!followQue.empty()) {
             Process p = followQue.front();
@@ -355,7 +353,6 @@ void *loadNewProcesses(void * arg)
             followQue.pop();
         }
     }
-    
     pthread_exit(NULL);
 }
 
@@ -367,7 +364,7 @@ void createApplicationSimilator(Config config,vector<MetaData> metaDatas)
 //    pthread_join(pid, NULL);
 }
 
-//Output for Assignment 5
+//Output for Assignment 3
 void outputLogSim3(Config config, vector<MetaData> metadatas)
 {
     //System start time
@@ -426,6 +423,56 @@ void outputLogSim3(Config config, vector<MetaData> metadatas)
     cout << setiosflags(ios::fixed) << systemRealTime() - startTime << " - Simulator Program ending" << endl;
 }
 
+void executeProcessWithRR(double flagTime,Process p)
+{
+    
+}
+
+void* QuantumTimerRun(void *t)
+{
+    double startTime = systemRealTime();
+    while (true) {
+        usleep(500000);
+        
+        vector<Process> v;
+        while (!appProcessesQue.empty()) {
+            v.push_back(appProcessesQue.front());
+            appProcessesQue.pop();
+        }
+        
+        int i = 0;
+        while (!v.empty()) {
+            Process p = v[i];
+            executeProcessWithRR(startTime, p);
+            if (p.remainingTime <= 0) v.erase(v.begin() + i);
+        }
+        
+    }
+    
+    pthread_exit(NULL);
+}
+
+
+
+void RRMEMethod(queue<Process> ProcessQue)
+{
+    double appStartTime = systemRealTime();
+    cout << "This is RR method" << endl;
+    
+    pthread_attr_init(&attr);
+    pthread_create(&thread, &attr, QuantumTimerRun, NULL);
+    pthread_join(thread, NULL);
+    
+    //Each process has 500ms execution time
+    //execute a process and then if it is over then pop if it is not over put it back
+    
+    while (!appProcessesQue.empty()) {
+        Process p = appProcessesQue.front();
+        appProcessesQue.pop();
+    }
+}
+
+
 //Output for assignment 5
 void outputLogSim5(Config config, vector<MetaData> metadatas)
 {
@@ -439,7 +486,6 @@ void outputLogSim5(Config config, vector<MetaData> metadatas)
     //Get the App Starting time
     double appStartTime = systemRealTime();
 
-    /*
     //Put into list and use sort method to sort the processes
     list<Process> processV;
     
@@ -447,6 +493,7 @@ void outputLogSim5(Config config, vector<MetaData> metadatas)
     //4. RR Quantum number 50
     if (appConfig.cpuSchedulingCode == "RR") {
         //RR algorithm
+        RRMEMethod(appProcessesQue);
     }
     
     //5. SRTF Shortest Time Remaining
@@ -460,12 +507,13 @@ void outputLogSim5(Config config, vector<MetaData> metadatas)
     }
     
     //Put the sorted processes back to queue
+    /*
     while (!processV.empty()) {
         Process p = processV.front();
         appProcessesQue.push(p);
         processV.pop_front();
     }
-    */
+     */
     
     //Mutiple processes
     //execute the process should be in main thread not this thread
@@ -490,6 +538,7 @@ int main(int argc, const char * argv[]) {
     //Output log
 //    outputLog(config,metadata);
     //outputLogSim3(appConfig, tasksMetadata);
+    
     outputLogSim5(appConfig, tasksMetadata);
     
     return 0;
